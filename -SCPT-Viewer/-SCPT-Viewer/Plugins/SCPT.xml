@@ -1,0 +1,513 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SCPT</name>
+    </assembly>
+    <members>
+        <member name="T:SCPT.Helper.AbstractTransformation">
+            <summary>
+            Abstract class for orderings formations classes with type transformations.
+            <example>
+            <code>
+            For add new transformation type into library tou need: 
+            1. Create class with new type transformation (etc. AffineTransformationSevenParams) 
+            2. Take AbstractTransformation parent new class (new class inherited AbstractTransformation) 
+            3. Inherit constructor and redefine all fields (use key word "new").
+            For more understanding look how formations classes:
+            </code>
+            <seealso cref="T:SCPT.Transformation.NewtonIterationProcess"/>
+            <seealso cref="T:SCPT.Transformation.LinearProcedure"/>
+            <seealso cref="T:SCPT.Transformation.SingularValueDecomposition"/>
+            </example>
+            </summary>
+        </member>
+        <member name="P:SCPT.Helper.AbstractTransformation.SourceSystemCoordinates">
+            <summary>
+            list X,Y,Z source coordinates in maters dimension.
+            </summary>
+        </member>
+        <member name="P:SCPT.Helper.AbstractTransformation.DestinationSystemCoordinates">
+            <summary>
+            list X,Y,Z destination coordinates in meters dimension. 
+            </summary>
+        </member>
+        <member name="P:SCPT.Helper.AbstractTransformation.RotationMatrix">
+            <summary>
+            [3,3] matrix containing parameters of rotation source SC regarding destination SC.
+             All values has dimension in radians.
+             <example>
+            <code>
+            |1  wz -wy|
+            |-wz 1  wx|
+            | wy -wx 1|
+            </code>
+            </example>
+            </summary>
+        </member>
+        <member name="P:SCPT.Helper.AbstractTransformation.DeltaCoordinateMatrix">
+            <summary>
+            [3,1] vector containing deltas (dx,dy,dz) of source SC regarding destination SC.
+             All values has dimension in meters.
+            <example>
+            <code>
+            |dx|
+            |dy|
+            |dz|
+            </code>
+            </example>
+            </summary>
+        </member>
+        <member name="P:SCPT.Helper.AbstractTransformation.M">
+            <summary>
+            scale factor in ppm (1 + m)
+            </summary>
+        </member>
+        <member name="P:SCPT.Helper.AbstractTransformation.MeanSquareErrorsMatrix">
+            <summary>
+            [7,1] vector containing mean square errors parameters transformation.
+             m(dx),m(dy),m(dz) has dimension in meters.
+             m(wx),m(wy),m(wz) has dimension in radians.
+             m has dimension in ppm (1+m) 
+            <example>
+            <code>
+            |m(dx)|
+            |m(dy)|
+            |m(dz)|
+            |m(wx)|
+            |m(wy)|
+            |m(wz)|
+            |m(m) |
+            where m(f) is mean square errors "f" value
+            </code>
+            </example>
+            </summary>
+        </member>
+        <member name="M:SCPT.Helper.AbstractTransformation.#ctor(SCPT.Helper.SystemCoordinate,SCPT.Helper.SystemCoordinate)">
+            <param name="srcListCord">list source coordinates which will be translated to destination coordinates</param>
+            <param name="destListCord">list destination coordinates</param>
+            <exception cref="T:System.NullReferenceException">throw then source list and destination list reference is null</exception>
+            <exception cref="T:System.ArgumentException">throw then source list and destination list have different length</exception>
+        </member>
+        <member name="T:SCPT.Helper.DeltaCoordinateMatrix">
+            <summary>
+            Representation Delta Coordinate Matrix.
+            <seealso cref="P:SCPT.Helper.AbstractTransformation.DeltaCoordinateMatrix"/>
+            </summary>
+        </member>
+        <member name="P:SCPT.Helper.DeltaCoordinateMatrix.Vector">
+            <inheritdoc cref="P:SCPT.Helper.AbstractTransformation.DeltaCoordinateMatrix"/>
+        </member>
+        <member name="P:SCPT.Helper.DeltaCoordinateMatrix.Dx">
+            <summary>
+            offset in meters relative to the original axis X coordinate system
+            </summary>
+        </member>
+        <member name="P:SCPT.Helper.DeltaCoordinateMatrix.Dy">
+            <summary>
+            offset in meters relative to the original axis Y coordinate system
+            </summary>
+        </member>
+        <member name="P:SCPT.Helper.DeltaCoordinateMatrix.Dz">
+            <summary>
+            offset in meters relative to the original axis Z coordinate system
+            </summary>
+        </member>
+        <member name="M:SCPT.Helper.DeltaCoordinateMatrix.#ctor(System.Double,System.Double,System.Double)">
+            <summary>
+            Forming delta coordinate vector from dx,dy,dz parameters
+            </summary>
+            <param name="dx"><see cref="P:SCPT.Helper.DeltaCoordinateMatrix.Dx"/></param>
+            <param name="dy"><see cref="P:SCPT.Helper.DeltaCoordinateMatrix.Dy"/></param>
+            <param name="dz"><see cref="P:SCPT.Helper.DeltaCoordinateMatrix.Dz"/></param>
+            <exception cref="T:System.ArgumentOutOfRangeException">Throw then one of dx,dy,dz attained to infinity</exception>
+            <exception cref="T:System.ArgumentException">Throw then one of dx,dy,dz is NaN</exception>
+        </member>
+        <member name="M:SCPT.Helper.DeltaCoordinateMatrix.#ctor(MathNet.Numerics.LinearAlgebra.Vector{System.Double})">
+            <summary>
+            Forming delta coordinate vector from vector
+            </summary>
+            <exception cref="T:System.ArgumentNullException">Throw then input parameter is NULL</exception>
+            <exception cref="T:System.ArgumentException">Throw then Count input vector not equal 3</exception>
+        </member>
+        <member name="T:SCPT.Helper.IVectorParameters">
+            <summary>
+            <code>
+            In various methods of conversion obtained in various vector conversion settings.
+            To separate the different generation logic different matrix (rotation, delta, scale)
+            this all General information has been brought to this interface.
+            If the conversion method you are adding requires that the output be converted in some way,
+            please create a new class that will implement this interface.
+            </code>
+            <seealso cref="T:SCPT.Helper.VecParams.A9VecParams"/>
+            <seealso cref="T:SCPT.Helper.VecParams.LPVecParams"/>
+            <seealso cref="T:SCPT.Helper.VecParams.NIPVecParams"/>
+            </summary>
+        </member>
+        <member name="P:SCPT.Helper.IVectorParameters.RotationMatrix">
+            <inheritdoc cref="P:SCPT.Helper.AbstractTransformation.RotationMatrix"/>
+        </member>
+        <member name="P:SCPT.Helper.IVectorParameters.DeltaCoordinateMatrix">
+            <inheritdoc cref="P:SCPT.Helper.AbstractTransformation.DeltaCoordinateMatrix"/>
+        </member>
+        <member name="P:SCPT.Helper.IVectorParameters.ScaleFactor">
+            <inheritdoc cref="P:SCPT.Helper.AbstractTransformation.M"/> 
+        </member>
+        <member name="T:SCPT.Helper.Point">
+            <summary>
+            Point, an entity that has a location in space or on a plane, but has no extent
+            </summary>
+        </member>
+        <member name="P:SCPT.Helper.Point.X">
+            <summary>
+            value characterizing the displacement of the point relative to 0 on the X axis
+            </summary>
+        </member>
+        <member name="P:SCPT.Helper.Point.Y">
+            <summary>
+            value characterizing the displacement of the point relative to 0 on the Y axis
+            </summary>
+        </member>
+        <member name="P:SCPT.Helper.Point.Z">
+            <summary>
+            value characterizing the displacement of the point relative to 0 on the Z axis
+            </summary>
+        </member>
+        <member name="M:SCPT.Helper.Point.#ctor(System.Double,System.Double,System.Double)">
+            <exception cref="T:System.ArgumentException">throw then coordinate cannot be NaN</exception>
+            <exception cref="T:System.ArithmeticException">throw then coordinate attained infinity</exception>
+        </member>
+        <member name="T:SCPT.Helper.RotationMatrix">
+            <summary>
+            Representation Rotation matrix.
+            Rotation Matrix can be two types:
+            <code>
+            1. With scale factor (m)
+            |1+m       wz*(1+m)  -wy*(1+m)|
+            |-wz*(1+m) 1+m       wx*(1+m) |
+            | wy*(1+m) -wx*(1+m) 1+m      |
+             
+            2. Without scale factor (m)
+            |1  wz -wy|
+            |-wz 1  wx|
+            | wy -wx 1|
+            </code>
+            Different type transformation return different type Rotation Matrix.
+            Be careful. And always check what 1) or 2) matrix you have.
+            <example>
+            <code>
+            if (IsMatrixWithM)
+                var rotMat = instance.Matrix.Convert_RotMatrixWithM_To_RotMatrixWithoutM();
+            else
+                var rotMat = instance.Matrix;
+            </code>
+            </example>
+            </summary>
+        </member>
+        <member name="P:SCPT.Helper.RotationMatrix.Matrix">
+            <inheritdoc cref="P:SCPT.Helper.AbstractTransformation.RotationMatrix"/>
+        </member>
+        <member name="P:SCPT.Helper.RotationMatrix.Wx">
+            <summary>
+            Rotation angle around X axis. Dimension is radians.
+            </summary>
+        </member>
+        <member name="P:SCPT.Helper.RotationMatrix.Wy">
+            <summary>
+            Rotation angle around Y axis. Dimension is radians
+            </summary>
+        </member>
+        <member name="P:SCPT.Helper.RotationMatrix.Wz">
+            <summary>
+            Rotation angle around Z axis. Dimension is radians
+            </summary>
+        </member>
+        <member name="P:SCPT.Helper.RotationMatrix.IsMatrixWithM">
+            <summary>
+            You always can check type matrix.
+            True = with M, false = without M.
+            </summary>
+        </member>
+        <member name="M:SCPT.Helper.RotationMatrix.#ctor(MathNet.Numerics.LinearAlgebra.Matrix{System.Double},System.Boolean)">
+            <param name="rotationMatrix">source rotation matrix</param>
+            <param name="isMatrixWithM">type source matrix <see cref="P:SCPT.Helper.RotationMatrix.IsMatrixWithM"/></param>
+            <exception cref="T:System.NullReferenceException">throw then matrix value is null</exception>
+            <exception cref="T:System.ArgumentException">throw then: 1.matrix not square.  2. matrix not 3x3. 3. m is NaN or attained infinity.</exception>
+        </member>
+        <member name="M:SCPT.Helper.RotationMatrix.#ctor(System.Double,System.Double,System.Double)">
+            <summary>
+            Forming Rotation Matrix from wx,wy,wz parameters.
+            <remarks>
+            The matrix created in this way always type 2 (without m), see <see cref="T:SCPT.Helper.RotationMatrix"/>
+            </remarks> 
+            </summary>
+            <param name="wx"><see cref="P:SCPT.Helper.RotationMatrix.Wx"/></param>
+            <param name="wy"><see cref="P:SCPT.Helper.RotationMatrix.Wy"/></param>
+            <param name="wz"><see cref="P:SCPT.Helper.RotationMatrix.Wz"/></param>
+            <exception cref="T:System.ArgumentOutOfRangeException">throw then double parameters attained infinity</exception>
+            <exception cref="T:System.ArgumentException">throw then double parameters is NaN</exception>
+        </member>
+        <member name="M:SCPT.Helper.RotationMatrix.Convert_RotMatrixWithoutM_To_RotMatrixWithM(System.Double)">
+            <param name="m">scale coefficient</param>
+            <returns>3x3 rotation matrix multiply on (1+m)</returns>
+            <exception cref="T:System.ArgumentException">throw then: m == NaN or m == +-infinity</exception>
+        </member>
+        <member name="M:SCPT.Helper.RotationMatrix.Convert_RotMatrixWithM_To_RotMatrixWithoutM">
+            <returns>3x3 matrix free from influence (1+m)</returns> 
+        </member>
+        <member name="T:SCPT.Helper.SystemCoordinate">
+            <summary>
+            System coordinate on different represent type
+            </summary>
+        </member>
+        <member name="P:SCPT.Helper.SystemCoordinate.List">
+            <summary>
+            Coordinates represent List type.
+            </summary>
+        </member>
+        <member name="P:SCPT.Helper.SystemCoordinate.Matrix">
+            <summary>
+            Coordinates represent Matrix type.
+            <example>
+            <code>
+            |X1 Y1 Z1|
+            |X2 Y2 Z2|
+            |.  .  . |
+            |Xn Yn Zn|
+            </code>
+            </example>
+            </summary>
+        </member>
+        <member name="P:SCPT.Helper.SystemCoordinate.Vector">
+            <summary>
+            Coordinates represent Vector type
+            </summary>
+            <example>
+            <code>
+            |X1|
+            |Y1|
+            |Z1|
+            |X2|
+            |Y2|
+            |Z2|
+            |..|
+            |Xn|
+            |Yn|
+            |Zn|
+            </code>
+            </example>
+        </member>
+        <member name="M:SCPT.Helper.SystemCoordinate.#ctor(System.Collections.Generic.List{SCPT.Helper.Point})">
+            <inheritdoc cref="T:SCPT.Helper.SystemCoordinate"/>
+        </member>
+        <member name="P:SCPT.Helper.VecParams.A9VecParams.RotationMatrix">
+            <inheritdoc />
+        </member>
+        <member name="P:SCPT.Helper.VecParams.A9VecParams.DeltaCoordinateMatrix">
+            <inheritdoc />
+        </member>
+        <member name="P:SCPT.Helper.VecParams.A9VecParams.ScaleFactor">
+            <inheritdoc />
+        </member>
+        <member name="P:SCPT.Helper.VecParams.LPVecParams.RotationMatrix">
+            <inheritdoc />
+        </member>
+        <member name="P:SCPT.Helper.VecParams.LPVecParams.DeltaCoordinateMatrix">
+            <inheritdoc />
+        </member>
+        <member name="P:SCPT.Helper.VecParams.LPVecParams.ScaleFactor">
+            <inheritdoc />
+        </member>
+        <member name="P:SCPT.Helper.VecParams.NIPVecParams.RotationMatrix">
+            <inheritdoc />
+        </member>
+        <member name="P:SCPT.Helper.VecParams.NIPVecParams.DeltaCoordinateMatrix">
+            <inheritdoc />
+        </member>
+        <member name="P:SCPT.Helper.VecParams.NIPVecParams.ScaleFactor">
+            <inheritdoc />
+        </member>
+        <member name="T:SCPT.Transformation.Helmert">
+            <summary>
+            Helmert transformation from source (sc1) system coordinate to destination (sc2) system coordinate.
+            <example>
+            <code>
+            var sc1Tosc2 =
+                new Helmert(sc1,sc2).FromSourceToDestination(delta, rotation, m);
+            while you not call method FromSourceToDestination, no conversion. 
+            </code>
+            </example> 
+            </summary>
+        </member>
+        <member name="M:SCPT.Transformation.Helmert.#ctor(SCPT.Helper.SystemCoordinate,SCPT.Helper.SystemCoordinate)">
+            <inheritdoc cref="T:SCPT.Transformation.Helmert"/>
+            <remarks>
+            By this constructor you can create one instance with systems coordinate and transform
+            with different parameters
+            </remarks>
+            <param name="sc1">Source system coordinate</param>
+            <param name="sc2">Destination system coordinate</param>
+        </member>
+        <member name="M:SCPT.Transformation.Helmert.#ctor(SCPT.Helper.DeltaCoordinateMatrix,SCPT.Helper.RotationMatrix,System.Double)">
+            <inheritdoc cref="T:SCPT.Transformation.Helmert"/>
+            <remarks>
+            By this constructor you can create one instance with parameters and transform
+            with different source and destination system coordinate.
+            </remarks>
+        </member>
+        <member name="M:SCPT.Transformation.Helmert.FromSourceToDestinationByParameters(SCPT.Helper.DeltaCoordinateMatrix,SCPT.Helper.RotationMatrix,System.Double)">
+            <summary>
+            Transform from sc1 to sc2 with one list source and destination coordinates, but many parameters.
+            </summary>
+            <exception cref="T:System.ArgumentException">Throw then you instantiate class with delta parameters,
+            and call method with transformation by parameters</exception>
+        </member>
+        <member name="M:SCPT.Transformation.Helmert.FromSourceToDestinationBySystemsCoordinate(SCPT.Helper.SystemCoordinate,SCPT.Helper.SystemCoordinate)">
+            <summary>
+            Transform from sc1 to sc2 with one parameters, but many source and destination lists.  
+            </summary>
+            <exception cref="T:System.ArgumentException">Throw then you instantiate class with coordinates,
+            and call method with transformation by coordinate</exception>
+        </member>
+        <member name="T:SCPT.Transformation.LinearProcedure">
+            <inheritdoc />
+            <summary>
+            <code>
+            Method get transformation parameters thought least squares.
+            Forming matrix conditional equations (Q). 
+            Forming vector amendments' for X,Y,Z (Vx, Vy, Vz). 
+            Thought least squares get rotation matrix multiply on (1+m).
+            </code> 
+            <remarks>
+            Calculation transformation parameters possible with one source and destination point.  
+            Accuracy rating cannot be estimated
+            </remarks>
+            </summary>
+        </member>
+        <member name="P:SCPT.Transformation.LinearProcedure.SourceSystemCoordinates">
+            <inheritdoc />
+        </member>
+        <member name="P:SCPT.Transformation.LinearProcedure.DestinationSystemCoordinates">
+            <inheritdoc />
+        </member>
+        <member name="P:SCPT.Transformation.LinearProcedure.RotationMatrix">
+            <inheritdoc />
+        </member>
+        <member name="P:SCPT.Transformation.LinearProcedure.DeltaCoordinateMatrix">
+            <inheritdoc />
+        </member>
+        <member name="P:SCPT.Transformation.LinearProcedure.M">
+            <inheritdoc />
+        </member>
+        <member name="M:SCPT.Transformation.LinearProcedure.#ctor(SCPT.Helper.SystemCoordinate,SCPT.Helper.SystemCoordinate)">
+            <inheritdoc />
+        </member>
+        <member name="T:SCPT.Transformation.NewtonIterationProcess">
+            <inheritdoc />
+            <summary>
+            <code>
+            Method founded on fixed-point iteration and least squares. 
+            Forming matrix conditional equations (A). 
+            Forming matrix residual (Y). 
+            Calculate transform parameters thought least squares.
+            Do accuracy rating.
+            </code>
+            <remarks>
+            Calculation transformation parameters possible with three and more source and destination point.
+            </remarks> 
+            </summary>
+        </member>
+        <member name="P:SCPT.Transformation.NewtonIterationProcess.SourceSystemCoordinates">
+            <inheritdoc />
+        </member>
+        <member name="P:SCPT.Transformation.NewtonIterationProcess.DestinationSystemCoordinates">
+            <inheritdoc />
+        </member>
+        <member name="P:SCPT.Transformation.NewtonIterationProcess.RotationMatrix">
+            <inheritdoc />
+        </member>
+        <member name="P:SCPT.Transformation.NewtonIterationProcess.DeltaCoordinateMatrix">
+            <inheritdoc />
+        </member>
+        <member name="P:SCPT.Transformation.NewtonIterationProcess.M">
+            <inheritdoc />
+        </member>
+        <member name="P:SCPT.Transformation.NewtonIterationProcess.MeanSquareErrorsMatrix">
+            <inheritdoc cref="P:SCPT.Helper.AbstractTransformation.MeanSquareErrorsMatrix" />
+        </member>
+        <member name="M:SCPT.Transformation.NewtonIterationProcess.#ctor(SCPT.Helper.SystemCoordinate,SCPT.Helper.SystemCoordinate)">
+            <inheritdoc />
+        </member>
+        <member name="T:SCPT.Transformation.NineAffine">
+            <summary>
+            <code>
+            This transformation is not much different from NIP, except that the scale factor
+            is divided on 3 components: m1,m2,m3. Here, too, the calculation of the parameters is
+            carried out using the least squares method, only different the method of forming the matrix A.
+            In NIP, these were partial derivatives of the helmert formula, and here we take the partial
+            derivatives of the result of multiplying the reversal matrices for each of the axes.
+            </code>
+            </summary>
+        </member>
+        <member name="P:SCPT.Transformation.NineAffine.SourceSystemCoordinates">
+            <inheritdoc />
+        </member>
+        <member name="P:SCPT.Transformation.NineAffine.DestinationSystemCoordinates">
+            <inheritdoc />
+        </member>
+        <member name="P:SCPT.Transformation.NineAffine.RotationMatrix">
+            <inheritdoc />
+        </member>
+        <member name="P:SCPT.Transformation.NineAffine.DeltaCoordinateMatrix">
+            <inheritdoc />
+        </member>
+        <member name="P:SCPT.Transformation.NineAffine.M">
+            <inheritdoc />
+        </member>
+        <member name="M:SCPT.Transformation.NineAffine.#ctor(SCPT.Helper.SystemCoordinate,SCPT.Helper.SystemCoordinate)">
+            <inheritdoc />
+        </member>
+        <member name="T:SCPT.Transformation.SingularValueDecomposition">
+            <inheritdoc />
+            <summary>
+            <code>
+            Obtaining transformation parameters using SVD decomposition.
+            The basic idea is that the rotation matrix (R) can be obtained by
+            multiplying the matrices obtained from the decomposition (U * VT).
+            Next, calculate how much one coordinate system "more"
+            another by comparing the two systems (trace1/trace2).
+            Then do the reverse conversion helmert and get dx,dy,dz.
+            </code>
+            <remarks>
+            <code>
+            Calculation transformation parameters possible with one source and destination point.
+            Accuracy rating cannot be estimated
+            </code>
+            </remarks>
+            </summary>
+        </member>
+        <member name="P:SCPT.Transformation.SingularValueDecomposition.SourceSystemCoordinates">
+            <inheritdoc />
+        </member>
+        <member name="P:SCPT.Transformation.SingularValueDecomposition.DestinationSystemCoordinates">
+            <inheritdoc />
+        </member>
+        <member name="P:SCPT.Transformation.SingularValueDecomposition.RotationMatrix">
+            <inheritdoc />
+        </member>
+        <member name="P:SCPT.Transformation.SingularValueDecomposition.DeltaCoordinateMatrix">
+            <inheritdoc />
+        </member>
+        <member name="P:SCPT.Transformation.SingularValueDecomposition.M">
+            <inheritdoc />
+        </member>
+        <member name="M:SCPT.Transformation.SingularValueDecomposition.#ctor(SCPT.Helper.SystemCoordinate,SCPT.Helper.SystemCoordinate)">
+            <inheritdoc />
+        </member>
+        <member name="T:BaseTest">
+            <summary>
+            Please, dont use this class.
+            His create only for algorithm test work.
+            </summary>
+        </member>
+    </members>
+</doc>
