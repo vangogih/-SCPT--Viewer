@@ -157,6 +157,11 @@
             Point, an entity that has a location in space or on a plane, but has no extent
             </summary>
         </member>
+        <member name="P:SCPT.Helper.Point.Name">
+            <summary>
+            The name of point
+            </summary>
+        </member>
         <member name="P:SCPT.Helper.Point.X">
             <summary>
             value characterizing the displacement of the point relative to 0 on the X axis
@@ -172,9 +177,14 @@
             value characterizing the displacement of the point relative to 0 on the Z axis
             </summary>
         </member>
-        <member name="M:SCPT.Helper.Point.#ctor(System.Double,System.Double,System.Double)">
+        <member name="M:SCPT.Helper.Point.#ctor(System.Double,System.Double,System.Double,System.String)">
             <exception cref="T:System.ArgumentException">throw then coordinate cannot be NaN</exception>
             <exception cref="T:System.ArithmeticException">throw then coordinate attained infinity</exception>
+        </member>
+        <member name="M:SCPT.Helper.Point.op_Subtraction(SCPT.Helper.Point,SCPT.Helper.Point)">
+            <summary>
+            Subtract each element of a Point from a another Point
+            </summary>
         </member>
         <member name="T:SCPT.Helper.RotationMatrix">
             <summary>
@@ -338,7 +348,7 @@
             </example> 
             </summary>
         </member>
-        <member name="M:SCPT.Transformation.Helmert.#ctor(SCPT.Helper.SystemCoordinate,SCPT.Helper.SystemCoordinate)">
+        <member name="M:SCPT.Transformation.Helmert.#ctor(SCPT.Helper.SystemCoordinate)">
             <inheritdoc cref="T:SCPT.Transformation.Helmert"/>
             <remarks>
             By this constructor you can create one instance with systems coordinate and transform
@@ -361,7 +371,7 @@
             <exception cref="T:System.ArgumentException">Throw then you instantiate class with delta parameters,
             and call method with transformation by parameters</exception>
         </member>
-        <member name="M:SCPT.Transformation.Helmert.FromSourceToDestinationBySystemsCoordinate(SCPT.Helper.SystemCoordinate,SCPT.Helper.SystemCoordinate)">
+        <member name="M:SCPT.Transformation.Helmert.FromSourceToDestinationBySystemsCoordinate(SCPT.Helper.SystemCoordinate)">
             <summary>
             Transform from sc1 to sc2 with one parameters, but many source and destination lists.  
             </summary>

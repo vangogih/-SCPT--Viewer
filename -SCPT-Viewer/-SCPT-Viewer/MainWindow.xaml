@@ -3,36 +3,29 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:oxy="http://oxyplot.org/wpf"
         xmlns:local="clr-namespace:_SCPT_Viewer"
         mc:Ignorable="d"
-        Title="MainWindow" Height="561.6" Width="952">
-    <Grid>
-        <DataGrid x:Name="SourceGrid" AutoGenerateColumns="False" HorizontalGridLinesBrush="DarkGray"
-                  RowBackground="LightGray" AlternatingRowBackground="White" ColumnWidth="100"
-                  HorizontalAlignment="Left" Height="400" Margin="50,50,0,0" VerticalAlignment="Top" Width="405">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Имя" IsReadOnly="true" Binding="{Binding Path=Name}" Width="100" />
-                <DataGridTextColumn Header="X,м" IsReadOnly="true" Binding="{Binding Path=X}" Width="100" />
-                <DataGridTextColumn Header="Y,м" IsReadOnly="true" Binding="{Binding Path=Y}" Width="100" />
-                <DataGridTextColumn Header="Z,м" IsReadOnly="true" Binding="{Binding Path=Z}" Width="100" />
-            </DataGrid.Columns>
-        </DataGrid>
+        Title="Вычисление параметров преобразования" Height="652.666" Width="1416.805">
+    <Grid Margin="0,0,0,0.2" HorizontalAlignment="Left" Width="1410">
+        <GroupBox Header="Координаты в исходной системе (СК1)" HorizontalAlignment="Left" Height="282"
+                  Margin="18,11,0,0" VerticalAlignment="Top" Width="405">
+            <DataGrid x:Name="SourceGrid" AutoGenerateColumns="False" HorizontalGridLinesBrush="DarkGray"
+                      RowBackground="LightGray" AlternatingRowBackground="White" Margin="10,0,10,25.2" Height="224"
+                      VerticalAlignment="Bottom">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Имя" IsReadOnly="True" Binding="{Binding Path=Name}" />
+                    <DataGridTextColumn Header="X,м" IsReadOnly="True" Binding="{Binding Path=X}" />
+                    <DataGridTextColumn Header="Y,м" IsReadOnly="True" Binding="{Binding Path=Y}" />
+                    <DataGridTextColumn Header="Z,м" IsReadOnly="True" Binding="{Binding Path=Z}" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </GroupBox>
 
-        <DataGrid x:Name="DestinationGrid" AutoGenerateColumns="False" HorizontalGridLinesBrush="DarkGray"
-                  RowBackground="LightGray" AlternatingRowBackground="White" ColumnWidth="100"
-                  HorizontalAlignment="Right" Height="400" Margin="0,50,50,0" VerticalAlignment="Top" Width="405">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Имя" IsReadOnly="true" Binding="{Binding Path=Name}" Width="100" />
-                <DataGridTextColumn Header="X,м" IsReadOnly="true" Binding="{Binding Path=X}" Width="100" />
-                <DataGridTextColumn Header="Y,м" IsReadOnly="true" Binding="{Binding Path=Y}" Width="100" />
-                <DataGridTextColumn Header="Z,м" IsReadOnly="true" Binding="{Binding Path=Z}" Width="100" />
-            </DataGrid.Columns>
-        </DataGrid>
         <Button x:Name="LoadSourceCoordinatesButton" Content="Загрузить" HorizontalAlignment="Left"
-                Margin="380,470,0,0" VerticalAlignment="Top" Width="75" Click="LoadingCoordinates" />
-        <Button x:Name="LoadDestinamtionCoordinatesButton" Content="Загрузить" HorizontalAlignment="Right"
-                Margin="0,470,50,0" VerticalAlignment="Top" Width="75" Click="LoadingCoordinates" />
-        <ComboBox x:Name="SeparatorSourceComboBox" HorizontalAlignment="Left" Margin="240,470,0,0"
+                Margin="333,268,0,0" VerticalAlignment="Top" Width="75" Click="LoadingCoordinates"
+                RenderTransformOrigin="1.111,0.065" />
+        <ComboBox x:Name="SeparatorSourceComboBox" HorizontalAlignment="Left" Margin="187,268,0,0"
                   VerticalAlignment="Top" Width="118" Height="20" SelectionChanged="ComboBox_Selected">
             <TextBlock>точка с запятой</TextBlock>
             <TextBlock>двоеточие</TextBlock>
@@ -40,7 +33,24 @@
             <TextBlock>точка</TextBlock>
             <TextBlock>пробел</TextBlock>
         </ComboBox>
-        <ComboBox x:Name="separatorDestinationComboBox" HorizontalAlignment="Right" Margin="0,470,150,0"
+
+        <GroupBox Header="Координаты в конечной системе (СК2)" HorizontalAlignment="Left" Height="288"
+                  Margin="18,293,0,0" VerticalAlignment="Top" Width="405">
+            <DataGrid x:Name="DestinationGrid" AutoGenerateColumns="False" HorizontalGridLinesBrush="DarkGray"
+                      RowBackground="LightGray" AlternatingRowBackground="White" Margin="10,0,10,26.4" Height="230"
+                      VerticalAlignment="Bottom">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Имя" IsReadOnly="True" Binding="{Binding Path=Name}" />
+                    <DataGridTextColumn Header="X,м" IsReadOnly="True" Binding="{Binding Path=X}" />
+                    <DataGridTextColumn Header="Y,м" IsReadOnly="True" Binding="{Binding Path=Y}" />
+                    <DataGridTextColumn Header="Z,м" IsReadOnly="True" Binding="{Binding Path=Z}" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </GroupBox>
+
+        <Button x:Name="LoadDestinamtionCoordinatesButton" Content="Загрузить" HorizontalAlignment="Left"
+                Margin="333,551,0,0" VerticalAlignment="Top" Width="75" Click="LoadingCoordinates" />
+        <ComboBox x:Name="separatorDestinationComboBox" HorizontalAlignment="Left" Margin="187,551,0,0"
                   VerticalAlignment="Top" Width="118" Height="20" SelectionChanged="ComboBox_Selected">
             <TextBlock>точка с запятой</TextBlock>
             <TextBlock>двоеточие</TextBlock>
@@ -48,5 +58,71 @@
             <TextBlock>точка</TextBlock>
             <TextBlock>пробел</TextBlock>
         </ComboBox>
+        <Button x:Name="CalculateButton" Content="Рассчитать" HorizontalAlignment="Left"
+                Margin="333,586,0,0" VerticalAlignment="Top" Width="75" Click="CalculateParameters" />
+
+        <GroupBox Header="Ньютоновский итерационный процесс" HorizontalAlignment="Left" Height="280"
+                  Margin="428,13,0,0" VerticalAlignment="Top" Width="246">
+
+            <DataGrid x:Name="NipDataGrid" AutoGenerateColumns="False" RowBackground="LightGray"
+                      AlternatingRowBackground="White" ColumnWidth="30" Margin="0,0,11.8,0" Height="250" VerticalAlignment="Top">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Имя" IsReadOnly="true" Binding="{Binding Name}" Width="50" />
+                    <DataGridTextColumn Header="ΔX,м" IsReadOnly="true" Binding="{Binding X}" Width="47" />
+                    <DataGridTextColumn Header="ΔY,м" IsReadOnly="true" Binding="{Binding Y}" Width="47" />
+                    <DataGridTextColumn Header="ΔZ,м" IsReadOnly="true" Binding="{Binding Z}" Width="47" />
+                </DataGrid.Columns>
+            </DataGrid>
+
+        </GroupBox>
+
+        <GroupBox Header="Линейная процедура" HorizontalAlignment="Left" Margin="914,14,0,0" Width="246"
+                  VerticalAlignment="Top" Height="279">
+
+            <DataGrid x:Name="LinearDataGrid" AutoGenerateColumns="False" RowBackground="LightGray"
+                      AlternatingRowBackground="White" ColumnWidth="30" Margin="10,1,9.6,6.6">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Имя" IsReadOnly="true" Binding="{Binding Name}" Width="50" />
+                    <DataGridTextColumn Header="ΔX,м" IsReadOnly="true" Binding="{Binding X}" Width="47" />
+                    <DataGridTextColumn Header="ΔY,м" IsReadOnly="true" Binding="{Binding Y}" Width="47" />
+                    <DataGridTextColumn Header="ΔZ,м" IsReadOnly="true" Binding="{Binding Z}" Width="47" />
+                </DataGrid.Columns>
+            </DataGrid>
+
+        </GroupBox>
+
+        <GroupBox Header="Сингулярная декомпозиция" HorizontalAlignment="Left" Margin="1165,14,0,0" Width="231"
+                  VerticalAlignment="Top" Height="279">
+
+            <DataGrid x:Name="SvdDataGrid" AutoGenerateColumns="False" RowBackground="LightGray"
+                      AlternatingRowBackground="White" ColumnWidth="30" HorizontalAlignment="Left" Margin="10,1,0,6.6"
+                      Width="207">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Имя" IsReadOnly="true" Binding="{Binding Name}" Width="50" />
+                    <DataGridTextColumn Header="ΔX,м" IsReadOnly="true" Binding="{Binding X}" Width="47" />
+                    <DataGridTextColumn Header="ΔY,м" IsReadOnly="true" Binding="{Binding Y}" Width="47" />
+                    <DataGridTextColumn Header="ΔZ,м" IsReadOnly="true" Binding="{Binding Z}" Width="47" />
+                </DataGrid.Columns>
+            </DataGrid>
+
+        </GroupBox>
+
+        <GroupBox Header="Аффинное под 9 параметрам" HorizontalAlignment="Left" Height="280" Margin="679,13,0,0"
+                  VerticalAlignment="Top" Width="230">
+            <DataGrid x:Name="A9DataGrid" AutoGenerateColumns="False" RowBackground="LightGray"
+                      AlternatingRowBackground="White" ColumnWidth="30" HorizontalAlignment="Left"
+                      Margin="10,0,-0.2,7.6" Width="207">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Имя" IsReadOnly="true" Binding="{Binding Name}" Width="50" />
+                    <DataGridTextColumn Header="ΔX,м" IsReadOnly="true" Binding="{Binding X}" Width="47" />
+                    <DataGridTextColumn Header="ΔY,м" IsReadOnly="true" Binding="{Binding Y}" Width="47" />
+                    <DataGridTextColumn Header="ΔZ,м" IsReadOnly="true" Binding="{Binding Z}" Width="47" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </GroupBox>
+        <DataGrid x:Name="NipParams" HorizontalAlignment="Left" Height="283" Margin="428,298,0,0" VerticalAlignment="Top" Width="246"/>
+        <DataGrid x:Name="A9Params" HorizontalAlignment="Left" Height="283" Margin="679,298,0,0" VerticalAlignment="Top" Width="230" />
+        <DataGrid x:Name="LpParams" HorizontalAlignment="Left" Height="283" Margin="914,298,0,0" VerticalAlignment="Top" Width="246" />
+        <DataGrid x:Name="SvdParams" HorizontalAlignment="Left" Height="283" Margin="1165,298,0,0" VerticalAlignment="Top" Width="230" />
     </Grid>
 </Window>

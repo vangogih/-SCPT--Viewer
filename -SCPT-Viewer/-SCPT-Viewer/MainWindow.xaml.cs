@@ -1,29 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
+using SCPT.Helper;
+using SCPT.Transformation;
+using Point = SCPT.Helper.Point;
 
 namespace _SCPT_Viewer
 {
-    public class Points
-    {
-        public string Name { get; set; }
-        public double X { get; set; }
-        public double Y { get; set; }
-        public double Z { get; set; }
-
-        public Points(string name, double x, double y, double z)
-        {
-            Name = name;
-            X = x;
-            Y = y;
-            Z = z;
-        }
-    }
-
     public partial class MainWindow : Window
     {
         private enum Separator
@@ -37,8 +23,9 @@ namespace _SCPT_Viewer
 
         private Separator _sourceSeparator;
         private Separator _destinationSeparator;
-        private List<Points> _sourcePoints;
-        private List<Points> _destinationPoints;
+        private List<Point> _sourcePoints;
+        private List<Point> _destinationPoints;
+
 
         public MainWindow()
         {
@@ -50,8 +37,8 @@ namespace _SCPT_Viewer
             SeparatorSourceComboBox.SelectedIndex = 0;
             separatorDestinationComboBox.SelectedIndex = 0;
 
-            _sourcePoints = new List<Points>();
-            _destinationPoints = new List<Points>();
+            _sourcePoints = new List<Point>();
+            _destinationPoints = new List<Point>();
         }
 
         private void ComboBox_Selected(object sender, RoutedEventArgs e)
@@ -103,26 +90,142 @@ namespace _SCPT_Viewer
         {
             var data = File.ReadAllLines(path);
 
-            foreach (var row in data)
+            try
             {
+                foreach (var row in data)
+                {
+                    if (isSource)
+                    {
+                        var col = row.Split((char) _sourceSeparator);
+
+                        if (col.Length == 3)
+                            _sourcePoints.Add(new Point(Convert.ToDouble(col[0]), Convert.ToDouble(col[1]),
+                                Convert.ToDouble(col[2])));
+                        else
+                            _sourcePoints.Add(new Point(Convert.ToDouble(col[1]), Convert.ToDouble(col[2]),
+                                Convert.ToDouble(col[3]), col[0]));
+                    }
+                    else
+                    {
+                        var col = row.Split((char) _destinationSeparator);
+                        if (col.Length == 3)
+                            _destinationPoints.Add(new Point(Convert.ToDouble(col[0]), Convert.ToDouble(col[1]),
+                                Convert.ToDouble(col[2])));
+                        else
+                            _destinationPoints.Add(new Point(Convert.ToDouble(col[1]), Convert.ToDouble(col[2]),
+                                Convert.ToDouble(col[3]), col[0]));
+                    }
+                }
+
                 if (isSource)
-                {
-                    var col = row.Split((char) _sourceSeparator);
-                    _sourcePoints.Add(new Points("", Convert.ToDouble(col[0]), Convert.ToDouble(col[1]),
-                        Convert.ToDouble(col[2])));
-                }
+                    SourceGrid.ItemsSource = _sourcePoints;
                 else
-                {
-                    var col = row.Split((char) _destinationSeparator);
-                    _destinationPoints.Add(new Points("", Convert.ToDouble(col[0]), Convert.ToDouble(col[1]),
-                        Convert.ToDouble(col[2])));
-                }
+                    DestinationGrid.ItemsSource = _destinationPoints;
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Проверьте что вы правильно указали разделитель и что конечный файл не занят другой программой", "Ошибка чтения файла", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void CalculateParameters(object sender, RoutedEventArgs e)
+        {
+            if (_sourcePoints.Count == 0)
+            {
+                MessageBox.Show("Список исходных координат не может быть меньше 0", "Ошибка выполнения", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
             }
 
-            if (isSource)
-                SourceGrid.ItemsSource = _sourcePoints;
-            else
-                DestinationGrid.ItemsSource = _destinationPoints;
+            if (_destinationPoints.Count == 0)
+            {
+                MessageBox.Show("Список конечных координат не может быть меньше 0", "Ошибка выполнения", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            var srcSc = new SystemCoordinate(_sourcePoints);
+            var dstSc = new SystemCoordinate(_destinationPoints);
+
+            var nip = new NewtonIterationProcess(srcSc, dstSc);
+            NipParams.ItemsSource = FillParamsList(nip);
+            var a9 = new NineAffine(srcSc, dstSc);
+            A9Params.ItemsSource = FillParamsList(a9);
+            var lp = new LinearProcedure(srcSc, dstSc);
+            LpParams.ItemsSource = FillParamsList(lp);
+            var svd = new SingularValueDecomposition(srcSc, dstSc);
+            SvdParams.ItemsSource = FillParamsList(svd);
+
+            var nipHelmert =
+                new Helmert(srcSc).FromSourceToDestinationByParameters(nip.DeltaCoordinateMatrix,
+                    nip.RotationMatrix, nip.M).GetSubtractList(dstSc);
+            NipDataGrid.ItemsSource = RoundList(nipHelmert);
+
+            var a9Helmert =
+                new Helmert(srcSc).FromSourceToDestinationByParameters(a9.DeltaCoordinateMatrix,
+                    a9.RotationMatrix, a9.M).GetSubtractList(dstSc);
+            A9DataGrid.ItemsSource = RoundList(a9Helmert);
+
+            var lpHelmert =
+                new Helmert(srcSc).FromSourceToDestinationByParameters(lp.DeltaCoordinateMatrix,
+                    lp.RotationMatrix, lp.M).GetSubtractList(dstSc);
+            LinearDataGrid.ItemsSource = RoundList(lpHelmert);
+
+            var svdHelmert =
+                new Helmert(srcSc).FromSourceToDestinationByParameters(svd.DeltaCoordinateMatrix,
+                    svd.RotationMatrix, svd.M).GetSubtractList(dstSc);
+
+            SvdDataGrid.ItemsSource = RoundList(svdHelmert);
+        }
+
+        private List<ParamsString> FillParamsList(AbstractTransformation transformation)
+        {
+            var resultList = new List<ParamsString>
+            {
+                new ParamsString("dX, м", transformation.DeltaCoordinateMatrix.Dx.ToString("F5")),
+                new ParamsString("dY, м", transformation.DeltaCoordinateMatrix.Dy.ToString("F5")),
+                new ParamsString("dZ, м", transformation.DeltaCoordinateMatrix.Dz.ToString("F5")),
+                new ParamsString("wX, rad", transformation.RotationMatrix.Wx.ToString("F15")),
+                new ParamsString("wY, rad", transformation.RotationMatrix.Wy.ToString("F15")),
+                new ParamsString("wZ, rad", transformation.RotationMatrix.Wz.ToString("F15")),
+                new ParamsString("M, ppm", transformation.M.ToString("F15"))
+            };
+            return resultList;
+        }
+
+        private List<PointString> RoundList(List<Point> list)
+        {
+            var roundList = new List<PointString>();
+            foreach (var point in list)
+                roundList.Add(new PointString("", Math.Round(point.X, 4).ToString("F4"),
+                    Math.Round(point.Y, 4).ToString("F4"), Math.Round(point.Z, 4).ToString("F4")));
+            return roundList;
+        }
+
+        private class ParamsString
+        {
+            public string Name { get; }
+            public string Value { get; }
+
+            public ParamsString(string name, string value)
+            {
+                Name = name;
+                Value = value;
+            }
+        }
+
+        private class PointString
+        {
+            public string Name { get; }
+            public string X { get; }
+            public string Y { get; }
+            public string Z { get; }
+
+            public PointString(string name, string x, string y, string z)
+            {
+                Name = name;
+                X = x;
+                Y = y;
+                Z = z;
+            }
         }
     }
 }
