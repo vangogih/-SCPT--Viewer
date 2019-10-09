@@ -144,7 +144,7 @@ namespace _SCPT_Viewer
 
             var srcSc = new SystemCoordinate(_sourcePoints);
             var dstSc = new SystemCoordinate(_destinationPoints);
-
+ 
             var nip = new NewtonIterationProcess(srcSc, dstSc);
             NipParams.ItemsSource = FillParamsList(nip);
             var a9 = new NineAffine(srcSc, dstSc);
@@ -186,7 +186,7 @@ namespace _SCPT_Viewer
                 new ParamsString("wX, rad", transformation.RotationMatrix.Wx.ToString("F15")),
                 new ParamsString("wY, rad", transformation.RotationMatrix.Wy.ToString("F15")),
                 new ParamsString("wZ, rad", transformation.RotationMatrix.Wz.ToString("F15")),
-                new ParamsString("M, ppm", transformation.M.ToString("F15"))
+                new ParamsString("M, [-]", transformation.M.ToString("F15"))
             };
             return resultList;
         }
